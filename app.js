@@ -2,6 +2,7 @@
   'use strict';
 
   const KEY = 'contraction-tracker-v1';
+  const SESSION_BREAK_MS = 2 * 60 * 60 * 1000;
   const $ = id => document.getElementById(id);
   const ui = {
     heading: $('timer-heading'), timer: $('timer'), meta: $('timerMeta'), main: $('mainButton'), offsets: $('offsetWrap'),
@@ -45,8 +46,10 @@
 
   function compact(ms) {
     const total = Math.max(0, Math.round(ms / 1000));
-    const m = Math.floor(total / 60);
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
     const s = total % 60;
+    if (h) return `${h}h${m ? ` ${m}m` : ''}`;
     return m ? `${m}m${s ? ` ${s}s` : ''}` : `${s}s`;
   }
 
@@ -69,6 +72,16 @@
 
   function average(values) {
     return values.reduce((sum, value) => sum + value, 0) / values.length;
+  }
+
+  function currentSessionStarts(items) {
+    const starts = items.map(item => item.start);
+    if (state.activeStart !== null) starts.push(state.activeStart);
+    if (!starts.length) return [];
+
+    let first = starts.length - 1;
+    while (first > 0 && starts[first] - starts[first - 1] <= SESSION_BREAK_MS) first -= 1;
+    return starts.slice(first);
   }
 
   function notify(message) {
@@ -123,7 +136,8 @@
   function renderStats() {
     const items = state.contractions;
     const recent = items.slice(-5);
-    const intervals = items.slice(1).map((x, i) => x.start - items[i].start).slice(-5);
+    const sessionStarts = currentSessionStarts(items);
+    const intervals = sessionStarts.slice(1).map((start, index) => start - sessionStarts[index]).slice(-5);
     ui.hour.textContent = String(items.filter(x => x.start >= Date.now() - 3600000).length +
       (state.activeStart !== null && state.activeStart >= Date.now() - 3600000 ? 1 : 0));
     ui.duration.textContent = recent.length ? compact(average(recent.map(x => x.end - x.start))) : '—';
@@ -137,7 +151,8 @@
     ui.empty.hidden = items.length > 0;
     ui.list.innerHTML = [...items].reverse().map((item, reverseIndex) => {
       const index = items.length - reverseIndex - 1;
-      const interval = index > 0 ? item.start - items[index - 1].start : null;
+      const rawInterval = index > 0 ? item.start - items[index - 1].start : null;
+      const interval = rawInterval !== null && rawInterval <= SESSION_BREAK_MS ? rawInterval : null;
       return `<div class="history-row">
         <div class="history-main"><div class="history-number">#${index + 1} · ${escape(calendarDate(item.start))}</div><div class="history-time">${escape(clock(item.start))}</div></div>
         <div class="metric"><span class="metric-label">Duration</span><span class="metric-value">${duration(item.end - item.start)}</span></div>
