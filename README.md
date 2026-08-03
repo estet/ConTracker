@@ -2,6 +2,10 @@
 
 A private, mobile-first web app for timing contractions. It has no account, backend, analytics, or network storage. Contractions are saved only in the current browser profile.
 
+## Live app
+
+Use Contraction Tracker at [estet.github.io/ConTracker](https://estet.github.io/ConTracker/).
+
 ## Run locally
 
 Service workers require HTTP(S), so use a local server rather than opening `index.html` with `file://`:
@@ -19,7 +23,7 @@ The included GitHub Actions workflow deploys the static app whenever `main` chan
 1. Push the files to the repository's `main` branch.
 2. In GitHub, open **Settings → Pages** and select **GitHub Actions** as the source if it is not already selected.
 3. Open **Actions** and verify that **Deploy static site to GitHub Pages** succeeds.
-4. Open the HTTPS deployment URL shown by GitHub.
+4. Open the deployed app at [estet.github.io/ConTracker](https://estet.github.io/ConTracker/).
 
 On iPhone, open that URL in Safari and use **Share → Add to Home Screen**. If Actions cannot be enabled, the app can alternatively be published directly from the `main` branch and repository root.
 
