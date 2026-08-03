@@ -54,6 +54,13 @@
     return new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(time));
   }
 
+  function calendarDate(time) {
+    const date = new Date(time);
+    const options = { day: 'numeric', month: 'short' };
+    if (date.getFullYear() !== new Date().getFullYear()) options.year = 'numeric';
+    return new Intl.DateTimeFormat(undefined, options).format(date);
+  }
+
   function escape(value) {
     const node = document.createElement('span');
     node.textContent = String(value);
@@ -132,7 +139,7 @@
       const index = items.length - reverseIndex - 1;
       const interval = index > 0 ? item.start - items[index - 1].start : null;
       return `<div class="history-row">
-        <div class="history-main"><div class="history-number">#${index + 1}</div><div class="history-time">${escape(clock(item.start))}</div></div>
+        <div class="history-main"><div class="history-number">#${index + 1} · ${escape(calendarDate(item.start))}</div><div class="history-time">${escape(clock(item.start))}</div></div>
         <div class="metric"><span class="metric-label">Duration</span><span class="metric-value">${duration(item.end - item.start)}</span></div>
         <div class="metric interval-metric"><span class="metric-label">Interval</span><span class="metric-value">${interval === null ? '—' : duration(interval)}</span></div>
         <button class="icon-button danger" type="button" aria-label="Delete entry" data-delete="${escape(item.id)}">×</button>
